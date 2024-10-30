@@ -1,8 +1,15 @@
 spring.cache.type: none
+
 spring:
-  init:
-    mode: always
+  liquibase:
+    change-log: classpath:changelog.sql
   datasource:
-    url: jdbc:postgresql://localhost:5433/jira-test
-    username: jira
-    password: JiraRush
+    url: jdbc:h2:mem:testdb
+    driverClassName: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+  h2:
+    console:
+      enabled: true

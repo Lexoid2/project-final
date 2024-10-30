@@ -85,6 +85,9 @@ spring:
   mvc.throw-exception-if-no-handler-found: true
   web.resources.add-mappings: false
 
+  config:
+    import: "classpath:application-secure.yaml"
+
 logging:
   level:
     root: WARN
@@ -101,6 +104,3 @@ server:
       enabled: true # Enable http encoding support
       force: true
 springdoc.swagger-ui.path: /doc
-
-config:
-  import: "application-prod.properties"
