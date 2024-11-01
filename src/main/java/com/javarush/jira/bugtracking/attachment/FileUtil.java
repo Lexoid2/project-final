@@ -1,5 +1,6 @@
 package com.javarush.jira.bugtracking.attachment;
 
+import com.javarush.jira.common.error.DirectoryCreationException;
 import com.javarush.jira.common.error.IllegalRequestDataException;
 import com.javarush.jira.common.error.NotFoundException;
 import lombok.experimental.UtilityClass;
@@ -7,14 +8,13 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 
 @UtilityClass
 public class FileUtil {
@@ -25,14 +25,18 @@ public class FileUtil {
             throw new IllegalRequestDataException("Select a file to upload.");
         }
 
-        File dir = new File(directoryPath);
-        if (dir.exists() || dir.mkdirs()) {
-            File file = new File(directoryPath + fileName);
-            try (OutputStream outStream = new FileOutputStream(file)) {
-                outStream.write(multipartFile.getBytes());
-            } catch (IOException ex) {
-                throw new IllegalRequestDataException("Failed to upload file" + multipartFile.getOriginalFilename());
-            }
+        try {
+            Files.createDirectories(Path.of(directoryPath));
+        } catch (IOException ex) {
+            throw new DirectoryCreationException("Failed to create directory: " + directoryPath, ex);
+        }
+
+        Path file = Path.of(directoryPath, fileName);
+
+        try (OutputStream outStream = Files.newOutputStream(file, StandardOpenOption.CREATE)) {
+            outStream.write(multipartFile.getBytes());
+        } catch (IOException ex) {
+            throw new IllegalRequestDataException("Failed to upload file: " + multipartFile.getOriginalFilename());
         }
     }
 

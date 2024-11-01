@@ -8,15 +8,18 @@ import com.javarush.jira.common.util.JsonUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.Profiles;
 import org.springframework.http.ProblemDetail;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
+import javax.sql.DataSource;
 import java.util.Map;
 import java.util.concurrent.Executor;
 
@@ -50,6 +53,24 @@ public class AppConfig {
 
     public boolean isTest() {
         return env.acceptsProfiles(Profiles.of("test"));
+    }
+
+    @Bean(name = "dataSource")
+    @Profile("prod")
+    public DataSource prodDataSource() {
+        DataSourceBuilder<?> dataSourceBuilder = DataSourceBuilder.create();
+        dataSourceBuilder.url(env.getProperty("SPRING_DATASOURCE_URL"));
+        dataSourceBuilder.username(env.getProperty("SPRING_DATASOURCE_USERNAME"));
+        dataSourceBuilder.password(env.getProperty("SPRING_DATASOURCE_PASSWORD"));
+        return dataSourceBuilder.build();
+    }
+
+    @Bean(name = "dataSource")
+    @Profile("test")
+    public DataSource testDataSource() {
+        DataSourceBuilder<?> dataSourceBuilder = DataSourceBuilder.create();
+        dataSourceBuilder.url("jdbc:h2:mem:testdb");
+        return dataSourceBuilder.build();
     }
 
     @Autowired
